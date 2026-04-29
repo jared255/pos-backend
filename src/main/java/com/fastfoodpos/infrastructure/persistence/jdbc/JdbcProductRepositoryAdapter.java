@@ -23,7 +23,7 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
     private static final String UPDATE = "UPDATE product SET name=?, description=?, price=?, stock=?, status=?, category_id=? WHERE id=?";
     private static final String DELETE = "DELETE FROM product WHERE id=?";
     private static final String GETONE = "SELECT id, name, description, price, stock, status, category_id FROM product WHERE id=?";
-    private static final String GETALL = "SELECT id, name, description, price,stock, status, category_id FROM product";
+    private static final String GETALL = "SELECT id, name, description, price, stock, status, category_id FROM product";
 
     // instancia de logger
     private static final Logger logger = LoggerFactory.getLogger(JdbcProductRepositoryAdapter.class);
@@ -37,7 +37,7 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
         List<Product> result = new ArrayList<>();
         try (Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(GETALL); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                result.add(mapProuct(rs));
+                result.add(mapProduct(rs));
             }
         } catch (SQLException e) {
             logger.error("Error al obtener los productos", e);
@@ -54,7 +54,7 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapProuct(rs));
+                    return Optional.of(mapProduct(rs));
                 } else {
                     logger.info("Producto no encontrado con id {}", id);
                     return Optional.empty();
@@ -118,15 +118,15 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
 
     }
 
-    private Product mapProuct(ResultSet rs) throws SQLException {
-        Product p = new Product();
-        p.setId(rs.getInt("id"));
-        p.setName(rs.getString("name"));
-        p.setDescription(rs.getString("description"));
-        p.setPrice(rs.getBigDecimal("price"));
-        p.setStock(rs.getInt("stock"));
-        p.setStatus(Product.ProductStatus.valueOf(rs.getString("status")));
-        p.setCategoryId(rs.getInt("category_id"));
-        return p;
+    private Product mapProduct(ResultSet rs) throws SQLException {
+        return new Product(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("description"),
+                rs.getBigDecimal("price"),
+                rs.getInt("stock"),
+                Product.ProductStatus.valueOf(rs.getString("status").trim().toUpperCase()),
+                rs.getInt("category_id")
+        );
     }
 }

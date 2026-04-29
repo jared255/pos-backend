@@ -10,12 +10,34 @@ public class Product{
     private ProductStatus status;
     private Integer categoryId;
 
+    public Product() {
+
+    }
+
     public enum ProductStatus{
         ACTIVO,
         INACTIVO,
         AGOTADO
     }
-    // Getters and Setters
+
+public Product(String name, String description,BigDecimal price,Integer stock,ProductStatus status){
+        this.name=name;
+        this.description=description;
+        this.price=price;
+        this.stock=stock;
+        this.status=status;
+}
+
+    public Product(Integer id, String name, String description, BigDecimal price, Integer stock, ProductStatus status, Integer categoryId) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.stock = stock;
+        this.status = status;
+        this.categoryId = categoryId;
+    }
+// Getters and Setters
 
     public Integer getId() {
         return id;
