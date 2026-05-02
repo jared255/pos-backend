@@ -115,7 +115,14 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
 
     @Override
     public void deleteById(Integer id) {
-
+        try (Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(DELETE)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            logger.info("Producto eliminado con id {}", id);
+        } catch (SQLException e) {
+            logger.error("Error eliminando producto con id {}", id, e);
+            throw new RuntimeException("Error eliminando producto por id: " + id, e);
+        }
     }
 
     private Product mapProduct(ResultSet rs) throws SQLException {
