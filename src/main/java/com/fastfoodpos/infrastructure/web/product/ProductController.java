@@ -1,6 +1,7 @@
 package com.fastfoodpos.infrastructure.web.product;
 
 import com.fastfoodpos.domain.port.in.ManageProductPort;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,13 +42,13 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> create(@RequestBody ProductRequest request) {
+    public ResponseEntity<Void> create(@Valid @RequestBody ProductRequest request) {
         Integer id = manageProductPort.save(request.toDomain());
         return ResponseEntity.created(URI.create("/api/products/" + id)).build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Integer id, @RequestBody ProductRequest request) {
+    public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody ProductRequest request) {
         if (manageProductPort.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }

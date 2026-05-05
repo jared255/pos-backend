@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pos-backend-postgres
+    environment:
+      POSTGRES_DB: fastfoodbd
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pos_postgres_data:/var/lib/postgresql/data
+      - ./db/fastfoodbd-postgres.sql:/docker-entrypoint-initdb.d/001-fastfoodbd-postgres.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fastfoodbd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pos_postgres_data:
