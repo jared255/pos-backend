@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:8080
+
+### List products
+GET {{baseUrl}}/api/products
+
+### Get product by id
+GET {{baseUrl}}/api/products/5
+
+### Create product
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Producto local",
+  "description": "Producto creado durante pruebas locales.",
+  "price": 19.90,
+  "stock": 20,
+  "status": "ACTIVO",
+  "categoryId": 1
+}
+
+### Update product
+PUT {{baseUrl}}/api/products/5
+Content-Type: application/json
+
+{
+  "name": "Coca-Cola actualizada",
+  "description": "Refresco de cola actualizado en modo local.",
+  "price": 18.50,
+  "stock": 90,
+  "status": "ACTIVO",
+  "categoryId": 1
+}
+
+### Delete product
+DELETE {{baseUrl}}/api/products/10
+
+### Validation error
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "Debe responder 400.",
+  "price": -1,
+  "stock": -5,
+  "status": "ACTIVO"
+}
