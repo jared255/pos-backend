@@ -35,6 +35,9 @@ Content-Type: application/json
 ### Delete product
 DELETE {{baseUrl}}/api/products/10
 
+### Verify logical delete
+GET {{baseUrl}}/api/products/10
+
 ### Validation error
 POST {{baseUrl}}/api/products
 Content-Type: application/json

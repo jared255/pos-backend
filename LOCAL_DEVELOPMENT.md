@@ -36,6 +36,14 @@ Para crear la base y cargar el esquema:
 .\scripts\init-local-postgres.ps1
 ```
 
+Si ya habias cargado la base antes del borrado logico, ejecuta la migracion incremental:
+
+```powershell
+.\scripts\apply-local-migrations.ps1 -Password 'tu-password-local'
+```
+
+El script busca `psql.exe` en rutas comunes, incluyendo instalaciones locales en `AppData\Local\PostgreSQL`.
+
 Si tu password local no es `postgres`:
 
 ```powershell

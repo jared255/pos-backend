@@ -23,9 +23,9 @@ public class JdbcProductRepositoryAdapter implements ProductRepositoryPort {
     private final DataSource ds;
     private static final String INSERT = "INSERT INTO product (name, description, price, stock, status, category_id) VALUES (?,?,?,?,?,?)";
     private static final String UPDATE = "UPDATE product SET name=?, description=?, price=?, stock=?, status=?, category_id=? WHERE id=?";
-    private static final String DELETE = "DELETE FROM product WHERE id=?";
-    private static final String GETONE = "SELECT id, name, description, price, stock, status, category_id FROM product WHERE id=?";
-    private static final String GETALL = "SELECT id, name, description, price, stock, status, category_id FROM product";
+    private static final String DELETE = "UPDATE product SET deleted_at=CURRENT_TIMESTAMP, status='INACTIVO' WHERE id=? AND deleted_at IS NULL";
+    private static final String GETONE = "SELECT id, name, description, price, stock, status, category_id FROM product WHERE id=? AND deleted_at IS NULL";
+    private static final String GETALL = "SELECT id, name, description, price, stock, status, category_id FROM product WHERE deleted_at IS NULL ORDER BY id";
 
     // instancia de logger
     private static final Logger logger = LoggerFactory.getLogger(JdbcProductRepositoryAdapter.class);

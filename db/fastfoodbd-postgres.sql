@@ -93,6 +93,7 @@ CREATE TABLE product (
     stock integer,
     status varchar(10) NOT NULL DEFAULT 'ACTIVO',
     category_id integer NOT NULL,
+    deleted_at timestamp without time zone,
     CONSTRAINT chk_product_price_positive CHECK (price >= 0),
     CONSTRAINT chk_product_stock_positive CHECK (stock IS NULL OR stock >= 0),
     CONSTRAINT chk_product_status
@@ -102,6 +103,7 @@ CREATE TABLE product (
 );
 
 CREATE INDEX idx_product_category_id ON product (category_id);
+CREATE INDEX idx_product_deleted_at ON product (deleted_at);
 
 CREATE TABLE order_detail (
     order_id integer NOT NULL,

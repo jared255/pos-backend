@@ -127,6 +127,16 @@ class ProductControllerTest {
         verify(manageProductPort).delete(5);
     }
 
+    @Test
+    void deleteReturnsNotFoundWhenProductDoesNotExist() throws Exception {
+        when(manageProductPort.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("/api/products/99"))
+                .andExpect(status().isNotFound());
+
+        verify(manageProductPort, never()).delete(99);
+    }
+
     private Product product() {
         return new Product(
                 5,

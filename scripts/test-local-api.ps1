@@ -24,6 +24,35 @@ $createdResponse = Invoke-WebRequest "$BaseUrl/api/products" `
     }'
 
 Write-Host "Creado. Location: $($createdResponse.Headers.Location)"
+$createdLocation = $createdResponse.Headers.Location
+$createdProduct = Invoke-RestMethod "$BaseUrl$createdLocation"
+
+Write-Host "GET $createdLocation"
+if ($createdProduct.name -ne 'Producto local') {
+    Write-Error "El producto creado no fue devuelto correctamente desde $createdLocation"
+}
+
+Write-Host "PUT $createdLocation"
+Invoke-WebRequest "$BaseUrl$createdLocation" `
+    -Method Put `
+    -ContentType 'application/json' `
+    -Body '{
+      "name": "Producto local actualizado",
+      "description": "Producto actualizado durante pruebas locales.",
+      "price": 21.50,
+      "stock": 15,
+      "status": "ACTIVO",
+      "categoryId": 1
+    }' | Out-Null
+
+Write-Host "DELETE $createdLocation"
+Invoke-WebRequest "$BaseUrl$createdLocation" -Method Delete | Out-Null
+
+Write-Host "GET borrado $createdLocation"
+$deletedResponse = Invoke-WebRequest "$BaseUrl$createdLocation" -SkipHttpErrorCheck
+if ($deletedResponse.StatusCode -ne 404) {
+    Write-Error "Se esperaba HTTP 404 despues del borrado logico y se recibio $($deletedResponse.StatusCode)"
+}
 
 Write-Host 'POST invalido /api/products'
 $invalidResponse = Invoke-WebRequest "$BaseUrl/api/products" `
