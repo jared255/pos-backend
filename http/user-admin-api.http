@@ -1,0 +1,60 @@
+@baseUrl = http://localhost:8080
+
+### List roles
+GET {{baseUrl}}/api/roles
+
+### Create person
+POST {{baseUrl}}/api/persons
+Content-Type: application/json
+
+{
+  "firstName": "Ana",
+  "paternalLastName": "Perez",
+  "maternalLastName": "Rojas",
+  "phone": "70000001"
+}
+
+### List persons
+GET {{baseUrl}}/api/persons
+
+### Create admin user
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "username": "admin.local",
+  "password": "admin123",
+  "personId": 1,
+  "roleIds": [1]
+}
+
+### Create basic user
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "username": "staff.local",
+  "password": "staff123",
+  "personId": 1,
+  "roleIds": [2]
+}
+
+### List users
+GET {{baseUrl}}/api/users
+
+### Get user by id
+GET {{baseUrl}}/api/users/1
+
+### Update user roles
+PUT {{baseUrl}}/api/users/1
+Content-Type: application/json
+
+{
+  "username": "admin.local",
+  "password": "",
+  "personId": 1,
+  "roleIds": [1, 2]
+}
+
+### Logical delete user
+DELETE {{baseUrl}}/api/users/1

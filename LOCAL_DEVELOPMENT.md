@@ -95,4 +95,11 @@ Si PowerShell bloquea scripts:
 .\scripts\test-local-api.cmd
 ```
 
+Para probar personas, roles y usuarios:
+
+```powershell
+.\scripts\test-user-api.cmd
+```
+
 Si usas IntelliJ IDEA, abre `http/product-api.http` y ejecuta las solicitudes desde el editor.
+Tambien puedes abrir `http/user-admin-api.http` para probar roles/personas/usuarios manualmente.
