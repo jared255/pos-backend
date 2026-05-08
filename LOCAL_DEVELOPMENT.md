@@ -36,10 +36,22 @@ Para crear la base y cargar el esquema:
 .\scripts\init-local-postgres.ps1
 ```
 
+Si Windows bloquea la ejecucion de scripts `.ps1`, usa el wrapper `.cmd`:
+
+```powershell
+.\scripts\init-local-postgres.cmd -Password 'tu-password-local'
+```
+
 Si ya habias cargado la base antes del borrado logico, ejecuta la migracion incremental:
 
 ```powershell
 .\scripts\apply-local-migrations.ps1 -Password 'tu-password-local'
+```
+
+O con el wrapper compatible con politicas restrictivas:
+
+```powershell
+.\scripts\apply-local-migrations.cmd -Password 'tu-password-local'
 ```
 
 El script busca `psql.exe` en rutas comunes, incluyendo instalaciones locales en `AppData\Local\PostgreSQL`.
@@ -75,6 +87,12 @@ Tambien puedes ejecutar pruebas HTTP basicas:
 
 ```powershell
 .\scripts\test-local-api.ps1
+```
+
+Si PowerShell bloquea scripts:
+
+```powershell
+.\scripts\test-local-api.cmd
 ```
 
 Si usas IntelliJ IDEA, abre `http/product-api.http` y ejecuta las solicitudes desde el editor.

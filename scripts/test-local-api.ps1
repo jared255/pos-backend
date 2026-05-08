@@ -14,6 +14,7 @@ Write-Host 'POST /api/products'
 $createdResponse = Invoke-WebRequest "$BaseUrl/api/products" `
     -Method Post `
     -ContentType 'application/json' `
+    -UseBasicParsing `
     -Body '{
       "name": "Producto local",
       "description": "Producto creado durante pruebas locales.",
@@ -36,6 +37,7 @@ Write-Host "PUT $createdLocation"
 Invoke-WebRequest "$BaseUrl$createdLocation" `
     -Method Put `
     -ContentType 'application/json' `
+    -UseBasicParsing `
     -Body '{
       "name": "Producto local actualizado",
       "description": "Producto actualizado durante pruebas locales.",
@@ -46,29 +48,40 @@ Invoke-WebRequest "$BaseUrl$createdLocation" `
     }' | Out-Null
 
 Write-Host "DELETE $createdLocation"
-Invoke-WebRequest "$BaseUrl$createdLocation" -Method Delete | Out-Null
+Invoke-WebRequest "$BaseUrl$createdLocation" -Method Delete -UseBasicParsing | Out-Null
 
 Write-Host "GET borrado $createdLocation"
-$deletedResponse = Invoke-WebRequest "$BaseUrl$createdLocation" -SkipHttpErrorCheck
-if ($deletedResponse.StatusCode -ne 404) {
-    Write-Error "Se esperaba HTTP 404 despues del borrado logico y se recibio $($deletedResponse.StatusCode)"
+$deletedStatusCode = $null
+try {
+    Invoke-WebRequest "$BaseUrl$createdLocation" -UseBasicParsing | Out-Null
+} catch {
+    $deletedStatusCode = [int] $_.Exception.Response.StatusCode
+}
+
+if ($deletedStatusCode -ne 404) {
+    Write-Error "Se esperaba HTTP 404 despues del borrado logico y se recibio $deletedStatusCode"
 }
 
 Write-Host 'POST invalido /api/products'
-$invalidResponse = Invoke-WebRequest "$BaseUrl/api/products" `
-    -Method Post `
-    -ContentType 'application/json' `
-    -SkipHttpErrorCheck `
-    -Body '{
-      "name": "",
-      "description": "Debe responder 400.",
-      "price": -1,
-      "stock": -5,
-      "status": "ACTIVO"
-    }'
+$invalidStatusCode = $null
+try {
+    Invoke-WebRequest "$BaseUrl/api/products" `
+        -Method Post `
+        -ContentType 'application/json' `
+        -UseBasicParsing `
+        -Body '{
+          "name": "",
+          "description": "Debe responder 400.",
+          "price": -1,
+          "stock": -5,
+          "status": "ACTIVO"
+        }' | Out-Null
+} catch {
+    $invalidStatusCode = [int] $_.Exception.Response.StatusCode
+}
 
-if ($invalidResponse.StatusCode -ne 400) {
-    Write-Error "Se esperaba HTTP 400 y se recibio $($invalidResponse.StatusCode)"
+if ($invalidStatusCode -ne 400) {
+    Write-Error "Se esperaba HTTP 400 y se recibio $invalidStatusCode"
 }
 
 Write-Host 'Pruebas HTTP basicas completadas.'
