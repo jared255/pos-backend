@@ -103,3 +103,26 @@ Para probar personas, roles y usuarios:
 
 Si usas IntelliJ IDEA, abre `http/product-api.http` y ejecuta las solicitudes desde el editor.
 Tambien puedes abrir `http/user-admin-api.http` para probar roles/personas/usuarios manualmente.
+
+## Frontend (monorepo)
+
+Se agrego un frontend base en `frontend/` usando React + TypeScript + Vite.
+
+Instalar dependencias del frontend:
+
+```powershell
+npm run frontend:install
+```
+
+Levantar frontend:
+
+```powershell
+npm run frontend:dev
+```
+
+Tambien puedes ejecutar los comandos directamente dentro de `frontend/`:
+
+```powershell
+npm install
+npm run dev
+```

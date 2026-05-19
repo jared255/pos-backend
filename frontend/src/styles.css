@@ -1,0 +1,27 @@
+:root {
+  font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+  color: #1f2937;
+  background-color: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.container {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 20px;
+}
+
+h1 {
+  margin-bottom: 12px;
+}
+
+p {
+  margin: 8px 0;
+}
