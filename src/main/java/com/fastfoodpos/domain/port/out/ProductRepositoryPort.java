@@ -4,8 +4,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepositoryPort {
-    List<Product>findAll();
+    List<Product> findAll();
+
+    List<Product> findAvailable();
+
+    List<Product> findByCategory(Integer categoryId);
+
     Optional<Product> findById(Integer id);
-    Integer save(Product product); // sirve para insert y update
+
+    Integer insert(Product product);
+
+    Integer update(Product product);
+
+    boolean existsByName(String name);
+
+    Integer changeStatus(Integer id, Product.ProductStatus status);
+
     void deleteById(Integer id);
 }

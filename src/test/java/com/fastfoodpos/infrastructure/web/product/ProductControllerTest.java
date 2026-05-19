@@ -1,6 +1,8 @@
 package com.fastfoodpos.infrastructure.web.product;
 
+import com.fastfoodpos.domain.exception.DuplicateMenuItemException;
 import com.fastfoodpos.domain.model.Product;
+import com.fastfoodpos.domain.exception.MenuItemNotFoundException;
 import com.fastfoodpos.domain.port.in.ManageProductPort;
 import com.fastfoodpos.infrastructure.web.error.RestExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +53,7 @@ class ProductControllerTest {
 
     @Test
     void findAllReturnsProductsFromPort() throws Exception {
-        when(manageProductPort.findAll()).thenReturn(List.of(product()));
+        when(manageProductPort.listMenuItems()).thenReturn(List.of(product()));
 
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
@@ -62,15 +64,33 @@ class ProductControllerTest {
 
     @Test
     void findByIdReturnsNotFoundWhenMissing() throws Exception {
-        when(manageProductPort.findById(99)).thenReturn(Optional.empty());
+        when(manageProductPort.findMenuItemById(99)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/products/99"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
+    void findAvailableReturnsOnlyAvailableProducts() throws Exception {
+        when(manageProductPort.listAvailableMenuItems()).thenReturn(List.of(product()));
+
+        mockMvc.perform(get("/api/products/available"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(5));
+    }
+
+    @Test
+    void findByCategoryReturnsProductsOfCategory() throws Exception {
+        when(manageProductPort.listMenuItemsByCategory(1)).thenReturn(List.of(product()));
+
+        mockMvc.perform(get("/api/products/category/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].categoryId").value(1));
+    }
+
+    @Test
     void createSavesProductAndReturnsCreatedLocation() throws Exception {
-        when(manageProductPort.save(any(Product.class))).thenReturn(12);
+        when(manageProductPort.registerMenuItem(any(Product.class))).thenReturn(12);
 
         mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -79,7 +99,7 @@ class ProductControllerTest {
                 .andExpect(header().string("Location", "/api/products/12"));
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-        verify(manageProductPort).save(captor.capture());
+        verify(manageProductPort).registerMenuItem(captor.capture());
         Product saved = captor.getValue();
         org.junit.jupiter.api.Assertions.assertEquals("Coca-Cola", saved.getName());
         org.junit.jupiter.api.Assertions.assertEquals(Product.ProductStatus.ACTIVO, saved.getStatus());
@@ -99,13 +119,12 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.details", hasItem("name: El nombre del producto es obligatorio")))
                 .andExpect(jsonPath("$.details", hasItem("price: El precio no puede ser negativo")));
 
-        verify(manageProductPort, never()).save(any(Product.class));
+        verify(manageProductPort, never()).registerMenuItem(any(Product.class));
     }
 
     @Test
     void updateReturnsNoContentWhenProductExists() throws Exception {
-        when(manageProductPort.findById(5)).thenReturn(Optional.of(product()));
-        when(manageProductPort.save(any(Product.class))).thenReturn(5);
+        when(manageProductPort.updateMenuItem(any(Product.class))).thenReturn(5);
 
         mockMvc.perform(put("/api/products/5")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,28 +132,49 @@ class ProductControllerTest {
                 .andExpect(status().isNoContent());
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-        verify(manageProductPort).save(captor.capture());
+        verify(manageProductPort).updateMenuItem(captor.capture());
         org.junit.jupiter.api.Assertions.assertEquals(5, captor.getValue().getId());
     }
 
     @Test
-    void deleteReturnsNoContentWhenProductExists() throws Exception {
-        when(manageProductPort.findById(5)).thenReturn(Optional.of(product()));
+    void updateReturnsNotFoundWhenMenuItemDoesNotExist() throws Exception {
+        when(manageProductPort.updateMenuItem(any(Product.class)))
+                .thenThrow(new MenuItemNotFoundException(999));
 
-        mockMvc.perform(delete("/api/products/5"))
-                .andExpect(status().isNoContent());
-
-        verify(manageProductPort).delete(5);
+        mockMvc.perform(put("/api/products/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest())))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void deleteReturnsNotFoundWhenProductDoesNotExist() throws Exception {
-        when(manageProductPort.findById(99)).thenReturn(Optional.empty());
+    void changeStatusReturnsNoContent() throws Exception {
+        String body = "{\"status\":\"INACTIVO\"}";
+        mockMvc.perform(put("/api/products/5/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
 
-        mockMvc.perform(delete("/api/products/99"))
-                .andExpect(status().isNotFound());
+        verify(manageProductPort).changeMenuItemStatus(5, Product.ProductStatus.INACTIVO);
+    }
 
-        verify(manageProductPort, never()).delete(99);
+    @Test
+    void deleteReturnsNoContent() throws Exception {
+        mockMvc.perform(delete("/api/products/5"))
+                .andExpect(status().isNoContent());
+
+        verify(manageProductPort).changeMenuItemStatus(5, Product.ProductStatus.INACTIVO);
+    }
+
+    @Test
+    void createReturnsConflictWhenNameAlreadyExists() throws Exception {
+        when(manageProductPort.registerMenuItem(any(Product.class)))
+                .thenThrow(new DuplicateMenuItemException("Coca-Cola"));
+
+        mockMvc.perform(post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validRequest())))
+                .andExpect(status().isConflict());
     }
 
     private Product product() {

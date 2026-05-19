@@ -1,8 +1,8 @@
 package com.fastfoodpos.infrastructure.web.product;
 
+import com.fastfoodpos.domain.model.Product;
 import com.fastfoodpos.domain.port.in.ManageProductPort;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +27,23 @@ public class ProductController {
 
     @GetMapping
     public List<ProductResponse> findAll() {
-        return manageProductPort.findAll()
+        return manageProductPort.listMenuItems()
+                .stream()
+                .map(ProductResponse::fromDomain)
+                .toList();
+    }
+
+    @GetMapping("/available")
+    public List<ProductResponse> findAvailable() {
+        return manageProductPort.listAvailableMenuItems()
+                .stream()
+                .map(ProductResponse::fromDomain)
+                .toList();
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public List<ProductResponse> findByCategory(@PathVariable Integer categoryId) {
+        return manageProductPort.listMenuItemsByCategory(categoryId)
                 .stream()
                 .map(ProductResponse::fromDomain)
                 .toList();
@@ -35,7 +51,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable Integer id) {
-        return manageProductPort.findById(id)
+        return manageProductPort.findMenuItemById(id)
                 .map(ProductResponse::fromDomain)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -43,27 +59,25 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody ProductRequest request) {
-        Integer id = manageProductPort.save(request.toDomain());
+        Integer id = manageProductPort.registerMenuItem(request.toDomain());
         return ResponseEntity.created(URI.create("/api/products/" + id)).build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> update(@PathVariable Integer id, @Valid @RequestBody ProductRequest request) {
-        if (manageProductPort.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        manageProductPort.updateMenuItem(request.toDomain(id));
+        return ResponseEntity.noContent().build();
+    }
 
-        manageProductPort.save(request.toDomain(id));
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Void> changeStatus(@PathVariable Integer id, @Valid @RequestBody ProductStatusRequest request) {
+        manageProductPort.changeMenuItemStatus(id, request.getStatus());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        if (manageProductPort.findById(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        manageProductPort.delete(id);
+        manageProductPort.changeMenuItemStatus(id, Product.ProductStatus.INACTIVO);
         return ResponseEntity.noContent().build();
     }
 }

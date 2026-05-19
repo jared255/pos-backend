@@ -6,11 +6,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ManageProductPort {
-    List<Product> findAll();
+    List<Product> listMenuItems();
 
-    Optional<Product> findById(Integer id);
+    List<Product> listAvailableMenuItems();
 
-    Integer save(Product product); // insert/update
+    List<Product> listMenuItemsByCategory(Integer categoryId);
 
-    void delete(Integer id);
+    Optional<Product> findMenuItemById(Integer id);
+
+    Integer registerMenuItem(Product product);
+
+    Integer updateMenuItem(Product product);
+
+    void changeMenuItemStatus(Integer id, Product.ProductStatus newStatus);
 }
