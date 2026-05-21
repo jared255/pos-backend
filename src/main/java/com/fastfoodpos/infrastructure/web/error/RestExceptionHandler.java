@@ -2,6 +2,8 @@ package com.fastfoodpos.infrastructure.web.error;
 
 import com.fastfoodpos.domain.exception.DuplicateMenuItemException;
 import com.fastfoodpos.domain.exception.MenuItemNotFoundException;
+import com.fastfoodpos.ordering.domain.exception.InvalidOrderStatusTransitionException;
+import com.fastfoodpos.ordering.domain.exception.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -41,5 +43,23 @@ public class RestExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleDuplicateMenuItem(DuplicateMenuItemException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiErrorResponse("Conflicto de negocio", List.of(exception.getMessage())));
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleOrderNotFound(OrderNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiErrorResponse("Recurso no encontrado", List.of(exception.getMessage())));
+    }
+
+    @ExceptionHandler(InvalidOrderStatusTransitionException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidOrderTransition(InvalidOrderStatusTransitionException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiErrorResponse("Conflicto de negocio", List.of(exception.getMessage())));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiErrorResponse("Solicitud invalida", List.of(exception.getMessage())));
     }
 }
