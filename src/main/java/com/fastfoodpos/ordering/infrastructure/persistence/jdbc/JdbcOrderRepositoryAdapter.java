@@ -7,6 +7,7 @@ import com.fastfoodpos.ordering.domain.port.out.OrderRepositoryPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -54,45 +55,41 @@ public class JdbcOrderRepositoryAdapter implements OrderRepositoryPort {
     @Override
     public Integer insert(Order order) {
         Integer statusId = resolveStatusId(order.getStatus());
-        try (Connection conn = ds.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                Integer orderId;
-                try (PreparedStatement ps = conn.prepareStatement(INSERT_ORDER, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                    ps.setBigDecimal(1, order.getTotal());
-                    ps.setInt(2, order.getOrderNumber());
-                    ps.setInt(3, order.getUserId());
-                    ps.setInt(4, statusId);
-                    ps.executeUpdate();
-                    try (ResultSet keys = ps.getGeneratedKeys()) {
-                        if (!keys.next()) {
-                            throw new SQLException("No se pudo obtener el id generado para el pedido");
-                        }
-                        orderId = keys.getInt(1);
+        Connection conn = DataSourceUtils.getConnection(ds);
+        try {
+            Integer orderId;
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_ORDER, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                ps.setBigDecimal(1, order.getTotal());
+                ps.setInt(2, order.getOrderNumber());
+                ps.setInt(3, order.getUserId());
+                ps.setInt(4, statusId);
+                ps.executeUpdate();
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (!keys.next()) {
+                        throw new SQLException("No se pudo obtener el id generado para el pedido");
                     }
+                    orderId = keys.getInt(1);
                 }
-
-                try (PreparedStatement ps = conn.prepareStatement(INSERT_ORDER_DETAIL)) {
-                    for (OrderItem item : order.getItems()) {
-                        ps.setInt(1, orderId);
-                        ps.setInt(2, item.getProductId());
-                        ps.setInt(3, item.getQuantity());
-                        ps.setBigDecimal(4, item.getUnitPrice());
-                        ps.setBigDecimal(5, item.getSubtotal());
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-
-                conn.commit();
-                return orderId;
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
             }
+
+            try (PreparedStatement ps = conn.prepareStatement(INSERT_ORDER_DETAIL)) {
+                for (OrderItem item : order.getItems()) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, item.getProductId());
+                    ps.setInt(3, item.getQuantity());
+                    ps.setBigDecimal(4, item.getUnitPrice());
+                    ps.setBigDecimal(5, item.getSubtotal());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+
+            return orderId;
         } catch (SQLException e) {
             logger.error("Error insertando pedido para usuario {}", order.getUserId(), e);
             throw new RuntimeException("Error insertando pedido", e);
+        } finally {
+            DataSourceUtils.releaseConnection(conn, ds);
         }
     }
 

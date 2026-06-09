@@ -14,6 +14,7 @@ import com.fastfoodpos.ordering.domain.port.out.OrderRepositoryPort;
 import com.fastfoodpos.ordering.domain.port.out.TicketNumberPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,6 +33,7 @@ public class ManageOrderService implements ManageOrderPort {
     }
 
     @Override
+    @Transactional
     public Integer createOrder(Order order) {
         logger.info("Creando pedido para usuario {}", order.getUserId());
         validateOrder(order);
@@ -39,7 +41,11 @@ public class ManageOrderService implements ManageOrderPort {
         order.setOrderNumber(ticketNumberPort.nextTicketNumber());
         order.setStatus(OrderStatus.PREPARING);
         Integer orderId = repository.insert(order);
-        domainEventPublisherPort.publish(new OrderCreatedEvent(orderId, order.getOrderNumber(), order.getUserId()));
+        List<OrderCreatedEvent.Item> eventItems = order.getItems()
+                .stream()
+                .map(item -> new OrderCreatedEvent.Item(item.getProductId(), item.getQuantity()))
+                .toList();
+        domainEventPublisherPort.publish(new OrderCreatedEvent(orderId, order.getOrderNumber(), order.getUserId(), eventItems));
         return orderId;
     }
 

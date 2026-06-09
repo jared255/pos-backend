@@ -2,6 +2,8 @@ package com.fastfoodpos.infrastructure.web.error;
 
 import com.fastfoodpos.domain.exception.DuplicateMenuItemException;
 import com.fastfoodpos.domain.exception.MenuItemNotFoundException;
+import com.fastfoodpos.inventory.domain.exception.InsufficientStockException;
+import com.fastfoodpos.inventory.domain.exception.InventoryProductNotFoundException;
 import com.fastfoodpos.ordering.domain.exception.InvalidOrderStatusTransitionException;
 import com.fastfoodpos.ordering.domain.exception.OrderNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -53,6 +55,18 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(InvalidOrderStatusTransitionException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidOrderTransition(InvalidOrderStatusTransitionException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiErrorResponse("Conflicto de negocio", List.of(exception.getMessage())));
+    }
+
+    @ExceptionHandler(InventoryProductNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleInventoryProductNotFound(InventoryProductNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiErrorResponse("Recurso no encontrado", List.of(exception.getMessage())));
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ApiErrorResponse> handleInsufficientStock(InsufficientStockException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ApiErrorResponse("Conflicto de negocio", List.of(exception.getMessage())));
     }
